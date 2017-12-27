@@ -1,0 +1,246 @@
+---
+driver:
+  name: dokken
+  privileged: true
+
+transport:
+  name: dokken
+
+provisioner:
+  name: dokken
+  attributes:
+    java:
+      jdk_version: 8
+    cassandra:
+      # install_java: false
+      setup_jamm: true
+      notify_restart: true
+      config:
+        cluster_name: test
+    apt:
+      confd:
+        install_recommends: false
+
+platforms:
+  - name: ubuntu-14
+    driver:
+      image: ubuntu:14.04
+      pid_one_command: /sbin/init
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update -qq
+        - RUN /usr/bin/apt-get install -y net-tools apt-transport-https initscripts procps lsb-release curl gnupg
+
+  - name: ubuntu-16
+    driver:
+      image: ubuntu:16.04
+      pid_one_command: /bin/systemd
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update -qq
+        - RUN /usr/bin/apt-get install -y net-tools apt-transport-https initscripts procps lsb-release curl gnupg
+
+  - name: debian-8
+    driver:
+      image: debian:8.9
+      pid_one_command: /sbin/init
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update -qq
+        - RUN /usr/bin/apt-get install -y net-tools apt-transport-https initscripts procps lsb-release curl gnupg
+
+  - name: debian-9
+    driver:
+      image: dokken/debian-9
+      pid_one_command: /bin/systemd
+      intermediate_instructions:
+        - RUN /usr/bin/apt-get update -qq
+        - RUN /usr/bin/apt-get install -y net-tools apt-transport-https initscripts procps lsb-release curl gnupg
+
+  - name: centos-6
+    driver:
+      image: centos:6.9
+      pid_one_command: /sbin/init
+      platform: rhel
+      intermediate_instructions:
+        - RUN yum install -y net-tools initscripts which curl
+
+  - name: centos-7
+    driver:
+      image: centos:7
+      pid_one_command: /usr/lib/systemd/systemd
+      platform: rhel
+      intermediate_instructions:
+        - RUN yum install -y net-tools initscripts systemd-sysv which lsof curl
+
+  - name: fedora-26
+    driver:
+      image: fedora:26
+      pid_one_command: /usr/lib/systemd/systemd
+      platform: rhel
+      intermediate_instructions:
+        - RUN yum install -y net-tools initscripts systemd-sysv which lsof curl
+
+  - name: amazon
+    driver:
+      image: amazonlinux:2017.03
+      pid_one_command: /sbin/init
+      platform: amazon
+      intermediate_instructions:
+        - RUN yum install -y net-tools initscripts which
+
+  - name: amazon2
+    driver:
+      image: amazonlinux:2017.12
+      pid_one_command: /usr/lib/systemd/systemd
+      platform: amazon
+      intermediate_instructions:
+        - RUN yum install -y net-tools initscripts which
+
+suites:
+  - name: chef12-default
+    driver:
+      chef_version: 12.21.4
+    run_list:
+      - recipe[cassandra-dse::default]
+
+  - name: chef13-default
+    driver:
+      chef_version: 13.3.42
+    run_list:
+      - recipe[cassandra-dse::default]
+
+  - name: chef12-opscenter-agent-datastax
+    driver:
+      chef_version: 12.21.4
+    attributes:
+      cassandra:
+        opscenter:
+          agent:
+            server_host: 0.0.0.0
+            use_chef_search: false
+    run_list:
+      - recipe[cassandra-dse::default]
+      - recipe[cassandra-dse::opscenter_agent_datastax]
+
+  - name: chef13-opscenter-agent-datastax
+    driver:
+      chef_version: 13.3.42
+    attributes:
+      cassandra:
+        opscenter:
+          agent:
+            server_host: 0.0.0.0
+            use_chef_search: false
+    run_list:
+      - recipe[cassandra-dse::default]
+      - recipe[cassandra-dse::opscenter_agent_datastax]
+
+  - name: chef12-opscenter-server-datastax
+    driver:
+      chef_version: 12.21.4
+    run_list:
+      - recipe[cassandra-dse::default]
+      - recipe[cassandra-dse::opscenter_server]
+
+  - name: chef13-opscenter-server-datastax
+    driver:
+      chef_version: 13.3.42
+    run_list:
+      - recipe[cassandra-dse::default]
+      - recipe[cassandra-dse::opscenter_server]
+
+  - name: chef12-dsc22
+    driver:
+      chef_version: 12.21.4
+    attributes:
+      cassandra:
+        package_name: dsc22
+        version: 2.2.7
+        release: 1
+    run_list:
+      - recipe[cassandra-dse::default]
+
+  - name: chef13-dsc22
+    driver:
+      chef_version: 13.3.42
+    attributes:
+      cassandra:
+        package_name: dsc22
+        version: 2.2.7
+        release: 1
+    run_list:
+      - recipe[cassandra-dse::default]
+
+  - name: chef12-dsc30
+    driver:
+      chef_version: 12.21.4
+    attributes:
+      java:
+        jdk_version: 8
+      cassandra:
+        package_name: dsc30
+        version: 3.0.6
+        release: 1
+        setup_jna: true
+        user_home: '/home/cassandra'
+    run_list:
+      - recipe[cassandra-dse::default]
+
+  - name: chef13-dsc30
+    driver:
+      chef_version: 13.3.42
+    attributes:
+      java:
+        jdk_version: 8
+      cassandra:
+        package_name: dsc30
+        version: 3.0.6
+        release: 1
+        setup_jna: true
+        user_home: '/home/cassandra'
+    run_list:
+      - recipe[cassandra-dse::default]
+
+  - name: chef12-tarball
+    driver:
+      chef_version: 12.21.4
+    attributes:
+      cassandra:
+        install_method: tarball
+        version: "3.9"
+    run_list:
+      - recipe[cassandra-dse::default]
+
+  - name: chef13-tarball
+    driver:
+      chef_version: 13.3.42
+    attributes:
+      cassandra:
+        install_method: tarball
+        version: "3.9"
+    run_list:
+      - recipe[cassandra-dse::default]
+
+  - name: chef12-dse
+    driver:
+      chef_version: 12.21.4
+    run_list:
+      - recipe[cassandra-dse::default]
+    attributes:
+      cassandra:
+        dse:
+          credentials:
+            databag: false
+            username: <%= ENV['CASSANDRA_DSE_USERNAME'] %>
+            password: <%= ENV['CASSANDRA_DSE_PASSWORD'] %>
+
+  - name: chef13-dse
+    driver:
+      chef_version: 13.3.42
+    run_list:
+      - recipe[cassandra-dse::default]
+    attributes:
+      cassandra:
+        dse:
+          credentials:
+            databag: false
+            username: <%= ENV['CASSANDRA_DSE_USERNAME'] %>
+            password: <%= ENV['CASSANDRA_DSE_PASSWORD'] %>

@@ -1,9 +1,85 @@
-language: ruby
-bundler_args: --without integration development
-rvm:
-  - 2.3
+sudo: required
+dist: trusty
+
+addons:
+  apt:
+    sources:
+      - chef-stable-trusty
+    packages:
+      - chefdk
+
+# Don't run bundle install
+install: echo "skip bundle install"
+
 branches:
   only:
     - master
-script: bundle exec rake unit
-dist: trusty
+    - /^(?i:travis).*$/
+
+services: docker
+
+env:
+  matrix:
+    - INSTANCE=chef13-tarball-ubuntu-14
+    - INSTANCE=chef13-tarball-ubuntu-16
+    - INSTANCE=chef13-tarball-debian-8
+    - INSTANCE=chef13-tarball-debian-9
+    - INSTANCE=chef13-tarball-centos-6
+    - INSTANCE=chef13-tarball-centos-7
+    - INSTANCE=chef13-tarball-fedora-26
+    - INSTANCE=chef13-tarball-amazon
+    - INSTANCE=chef13-tarball-amazon2
+    - INSTANCE=chef13-dse-ubuntu-14
+    - INSTANCE=chef13-dse-ubuntu-16
+    - INSTANCE=chef13-dse-debian-8
+    - INSTANCE=chef13-dse-debian-9
+    - INSTANCE=chef13-dse-centos-6
+    - INSTANCE=chef13-dse-centos-7
+    - INSTANCE=chef13-dse-fedora-26
+    - INSTANCE=chef13-dse-amazon
+    - INSTANCE=chef13-dse-amazon2
+    - INSTANCE=chef13-dsc30-ubuntu-14
+    - INSTANCE=chef13-dsc30-ubuntu-16
+    - INSTANCE=chef13-dsc30-debian-8
+    - INSTANCE=chef13-dsc30-debian-9
+    - INSTANCE=chef13-dsc30-centos-6
+    - INSTANCE=chef13-dsc30-centos-7
+    - INSTANCE=chef13-dsc30-fedora-26
+    - INSTANCE=chef13-dsc30-amazon
+    - INSTANCE=chef13-dsc30-amazon2
+    - INSTANCE=chef13-opscenter-server-datastax-ubuntu-14
+    - INSTANCE=chef13-opscenter-server-datastax-ubuntu-16
+    - INSTANCE=chef13-opscenter-server-datastax-debian-8
+    - INSTANCE=chef13-opscenter-server-datastax-debian-9
+    - INSTANCE=chef13-opscenter-server-datastax-centos-6
+    - INSTANCE=chef13-opscenter-server-datastax-centos-7
+    - INSTANCE=chef13-opscenter-server-datastax-fedora-26
+    - INSTANCE=chef13-opscenter-server-datastax-amazon
+    - INSTANCE=chef13-opscenter-server-datastax-amazon2
+    - INSTANCE=chef13-opscenter-agent-datastax-ubuntu-14
+    - INSTANCE=chef13-opscenter-agent-datastax-ubuntu-16
+    - INSTANCE=chef13-opscenter-agent-datastax-debian-8
+    - INSTANCE=chef13-opscenter-agent-datastax-debian-9
+    - INSTANCE=chef13-opscenter-agent-datastax-centos-6
+    - INSTANCE=chef13-opscenter-agent-datastax-centos-7
+    - INSTANCE=chef13-opscenter-agent-datastax-fedora-26
+    - INSTANCE=chef13-opscenter-agent-datastax-amazon
+    - INSTANCE=chef13-opscenter-agent-datastax-amazon2
+
+script:
+  - KITCHEN_LOCAL_YAML=.kitchen.dokken.yml /opt/chefdk/embedded/bin/kitchen verify ${INSTANCE}
+  - cat .kitchen/logs/kitchen.log
+
+before_script:
+  - sudo iptables -L DOCKER || ( echo "DOCKER iptables chain missing" ; sudo iptables -N DOCKER )
+  - eval "$(/opt/chefdk/bin/chef shell-init bash)"
+  - /opt/chefdk/embedded/bin/chef --version
+  - /opt/chefdk/embedded/bin/cookstyle --version
+  - /opt/chefdk/embedded/bin/foodcritic --version
+
+
+matrix:
+  include:
+    - script:
+      - /opt/chefdk/bin/chef exec rake unit
+      env: UNIT_AND_LINT=1
