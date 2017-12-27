@@ -177,7 +177,7 @@ ruby_block 'require_pam_limits.so' do
   only_if { ::File.readlines('/etc/pam.d/su').grep(/# #{pam_limits}/).any? }
 end
 
-template_platform_family = %w(rhel fedora amazon).include?(node['platform_family']) ? 'rhel' : node['platform_family']
+template_platform_family = %w[rhel fedora amazon].include?(node['platform_family']) ? 'rhel' : node['platform_family']
 
 if node['cassandra']['use_initd']
   # sysv service file
