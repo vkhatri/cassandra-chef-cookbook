@@ -20,7 +20,7 @@
 if node['cassandra']['dse']
   dse = node['cassandra']['dse']
   dse_credentials = if dse['credentials']['databag']
-                      Chef::EncryptedDataBagItem.load(dse['credentials']['databag']['name'], dse['credentials']['databag']['item'])[dse['credentials']['databag']['entry']]
+                      data_bag_item(dse['credentials']['databag']['name'], dse['credentials']['databag']['item'])[dse['credentials']['databag']['entry']]
                     else
                       dse['credentials']
                     end
