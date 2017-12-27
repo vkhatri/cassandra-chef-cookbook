@@ -133,7 +133,7 @@ when 'debian'
     action :nothing
   end
 
-when 'rhel'
+when 'rhel', 'amazon', 'fedora'
   node.default['cassandra']['conf_dir'] = '/etc/cassandra/conf'
 
   if node['cassandra']['use_systemd']

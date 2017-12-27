@@ -41,8 +41,8 @@ when 'debian'
     key node['cassandra']['apt']['repo_key']
     action node['cassandra']['apt']['action']
   end
-when 'rhel'
-  include_recipe 'yum'
+when 'rhel', 'fedora', 'amazon'
+  include_recipe 'yum' unless node['platform_family'] == 'amazon'
 
   yum_repository node['cassandra']['yum']['repo'] do
     if node['cassandra']['dse']
